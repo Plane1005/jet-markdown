@@ -18,6 +18,7 @@ import split from './icon/split.svg'
 import cite from './icon/cite.svg'
 import file from './icon/filelist.svg'
 import h2 from './icon/h2.svg'
+const fileApi = 'http://116.62.220.126:2333/api/file/upload'
 
 const Marked = () => {
     const [text, setText] = useState(''); 
@@ -49,12 +50,6 @@ const Marked = () => {
             tables: true, //默认为true。 允许支持表格语法。该选项要求 gfm 为true。
             breaks: true, //默认为false。 允许回车换行。该选项要求 gfm 为true。
         });
-        document.addEventListener('keydown', function(e) {
-            if (e.code === 83 && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey))      {
-                  e.preventDefault();
-                  alert('saved');
-                }
-          });
     }, []);
 
     useEffect(() => {
@@ -65,7 +60,7 @@ const Marked = () => {
         // console.log(text,begin,end,e);
         let mark = document.getElementById("mark")
         if (begin === end){ // 光标未选中内容时
-            mark.value = text.slice(0,begin) + e + text.slice(end)
+            mark.value = text.slice(0,begin) + e + text.slice(end) 
             mark.setSelectionRange(begin+indent[type],begin+indent[type]);
             mark.focus()
         } else { // 当光标选中内容后
@@ -99,12 +94,27 @@ const Marked = () => {
     }
 
     function submitMark() {
+        setShowlist(false)
         Modal.confirm({
             title: '提示',
             content: '您真的要提交吗，一旦提交不可再次修改',
             onOk() {message.success('提交成功');},
             cancelText : '取消',
             okText:'确定',
+            afterClose() {setShowlist(true)},
+            closable: true,
+        });
+    }
+
+    function deleteFile(name) {
+        setShowlist(false)
+        Modal.confirm({
+            title: '提示',
+            content: `真的要删除${name}吗?`,
+            onOk() {message.success('删除成功');},
+            cancelText : '取消',
+            okText:'确定',
+            afterClose() {setShowlist(true)},
             closable: true,
         });
     }
@@ -118,13 +128,12 @@ const Marked = () => {
     }
 
     const content = (
-        <div><Upload fileList={fileList} /></div>
+        <div><Upload style={{cursor:'pointer'}} fileList={fileList} onRemove={(file)=>{deleteFile(file.name)}} /></div>
       );
 
       const handleScroll = (block, event) => {
         let { scrollHeight, scrollTop, clientHeight } = event.target
         let scale = scrollTop / (scrollHeight - clientHeight)  // 改进后的计算滚动比例的方法
-
         if(block === 1) {
             if(scrolling === 0) scrolling = 1;  
             if(scrolling === 2) return;    
@@ -140,7 +149,6 @@ const Marked = () => {
     const driveScroll = (scale, el) => {
         let { scrollHeight, clientHeight } = el
         el.scrollTop = (scrollHeight - clientHeight) * scale  // scrollTop的同比例滚动
-
         if(scrollTimer) clearTimeout(scrollTimer);
         scrollTimer = setTimeout(() => {
             scrolling = 0   
@@ -165,9 +173,8 @@ const Marked = () => {
                     <li onClick={() => {}} ><button><img src={image} alt='' />图片</button></li>
                     <li>|</li>
                     {/* <li onClick={() => addMark()} ><button><img src={preview} alt='' />预览</button></li> */}
-                    <li onClick={() => saveMark()} ><button><img src={save} alt='' />保存</button></li>
-                    <li onClick={submitMark} ><button><img src={submit} alt='' />提交</button></li>
                     <Upload
+                            action={fileApi}
                             // accept='.zip'
                             // beforeUpload={ (file,filelist) => {
                             //     console.log(file,filelist);
@@ -183,7 +190,17 @@ const Marked = () => {
                             //   }
                             // }
                             onChange={(file)=>{
-                                setFileList(file.fileList)
+                                let fileList = [...file.fileList];
+                                // 2. Read from response and show file link
+                                fileList = fileList.map(file => {
+                                    if (file.response) {
+                                      // Component will show file.url as link
+                                      file.url = 'http://116.62.220.126' + file.response.url;
+                                    }
+                                    return file;
+                                  });
+                                setFileList(fileList)
+                                console.log(fileList);
                                 setShowlist(true)
                             }}
                             showUploadList={false}
@@ -192,6 +209,8 @@ const Marked = () => {
                     <Popover content={content} title="已上传文件列表" onClick={()=>setShowlist(!showlist)} visible={showlist} >
                         <li><button><img src={file} alt='' />文件列表{showlist ? '▴' : '▾'}</button></li>
                     </Popover>
+                    <li onClick={() => saveMark()} ><button><img src={save} alt='' />保存</button></li>
+                    <li onClick={submitMark} ><button><img src={submit} alt='' />提交</button></li>
                 </ul>
             </div>
             <div className="m-marked">
