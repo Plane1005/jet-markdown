@@ -106,12 +106,12 @@ const Marked = () => {
         });
     }
 
-    function deleteFile(name) {
+    function deleteFile(file) {
         setShowlist(false)
         Modal.confirm({
             title: '提示',
-            content: `真的要删除${name}吗?`,
-            onOk() {message.success('删除成功');},
+            content: `真的要删除${file.name}吗?`,
+            onOk() {setFileList(fileList.filter((obj)=>file.uid!==obj.uid));message.success('删除成功');},
             cancelText : '取消',
             okText:'确定',
             afterClose() {setShowlist(true)},
@@ -128,7 +128,7 @@ const Marked = () => {
     }
 
     const content = (
-        <div><Upload style={{cursor:'pointer'}} fileList={fileList} onRemove={(file)=>{deleteFile(file.name)}} /></div>
+        <div><Upload style={{cursor:'pointer'}} fileList={fileList} onRemove={(file)=>{deleteFile(file)}} /></div>
       );
 
       const handleScroll = (block, event) => {
@@ -189,6 +189,7 @@ const Marked = () => {
                             //     return file.type === 'application/x-zip-compressed' && this.props.userStore.currUser.usr === file.name ? true : Upload.LIST_IGNORE;
                             //   }
                             // }
+                            fileList={fileList}
                             onChange={(file)=>{
                                 let fileList = [...file.fileList];
                                 // 2. Read from response and show file link
