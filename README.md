@@ -24,10 +24,7 @@ mark.focus()
 ### 设置所有的a标签都为新便签页打开
 首先想到获取所有a标签的dom节点，依次设置target属性，后来发现会有bug，会出现刚设置好时无法立即设置好的情况
 后来看到了一个简便方法，直接在index.html中加入
-<<<<<<< HEAD
-"<base target="_blank" />"
-=======
+
 base target="_blank"
->>>>>>> 5043c2e007723d9b8f0599d8c5601648cec98083
 直接全局设置
 
