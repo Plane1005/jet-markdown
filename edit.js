@@ -20,7 +20,7 @@ import file from './icon/filelist.svg'
 import h2 from './icon/h2.svg'
 const fileApi = 'http://116.62.220.126:2333/api/file/upload'
 
-const Marked = () => {
+const Marked = (props) => {
     const [text, setText] = useState(''); 
     const [showText, setShowText] = useState(''); 
     const edit = useRef(null)  // 编辑区元素
@@ -31,7 +31,6 @@ const Marked = () => {
     const [showlist, setShowlist] = useState(false)
     let scrolling = 0 
     let scrollTimer
-
     // 每个按键应该让光标缩进的格子
     let indent = [2,2,3,2,6,2,6]
 
@@ -50,6 +49,12 @@ const Marked = () => {
             tables: true, //默认为true。 允许支持表格语法。该选项要求 gfm 为true。
             breaks: true, //默认为false。 允许回车换行。该选项要求 gfm 为true。
         });
+        let content = window.sessionStorage.getItem('content')
+        // console.log(content);
+        if (content) {
+            document.getElementById("mark").value = content
+            setText(content);
+        }
     }, []);
 
     useEffect(() => {
@@ -123,6 +128,7 @@ const Marked = () => {
         // console.log(e.target.selectionStart);
         var value=document.getElementById("mark").value;
         setText(value);
+        window.sessionStorage.setItem('content',value)
         setBegin(e.target.selectionStart)
         setEnd(e.target.selectionEnd)
     }
@@ -201,7 +207,7 @@ const Marked = () => {
                                     return file;
                                   });
                                 setFileList(fileList)
-                                console.log(fileList);
+                                // console.log(fileList);
                                 setShowlist(true)
                             }}
                             showUploadList={false}
@@ -241,7 +247,7 @@ const Marked = () => {
                     onScroll={(e) => handleScroll(2, e)}
                     className="show-region markdownStyle"
                     id="show"
-                    onChange={(e)=>{console.log(e);}}
+                    // onChange={(e)=>{console.log(e);}}
                     dangerouslySetInnerHTML={{
                         __html: showText,
                     }}
